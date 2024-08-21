@@ -46,31 +46,65 @@ def import_csv(file_path):
         return None
 
 def calculate_engagement_rate(row):
+    st.write("--- Calculating Engagement Rate ---")
+    st.write(f"Processing row: {row}")
+    
     try:
-        logger.debug(f"Calculating engagement rate for row: {row}")
-        
         # Step 1: Get engagements and impressions
         engagements = row.get('engagements', 0)
         impressions = row.get('impressions', 0)
-        logger.debug(f"Raw values - Engagements: {engagements}, Impressions: {impressions}")
+        st.write(f"Raw values - Engagements: {engagements}, Impressions: {impressions}")
         
         # Step 2: Convert to float and handle NaN
         engagements = float(engagements) if pd.notnull(engagements) else 0
         impressions = float(impressions) if pd.notnull(impressions) else 0
-        logger.debug(f"Converted values - Engagements: {engagements}, Impressions: {impressions}")
+        st.write(f"Converted values - Engagements: {engagements}, Impressions: {impressions}")
         
         # Step 3: Check if impressions is greater than 0
         if impressions > 0:
             # Step 4: Calculate engagement rate
             engagement_rate = (engagements / impressions) * 100
-            logger.debug(f"Calculated engagement rate: {engagement_rate}")
+            st.write(f"Calculated engagement rate: {engagement_rate:.2f}%")
             return engagement_rate
         else:
-            logger.warning(f"Impressions is 0 or not present. Cannot calculate engagement rate. Row data: {row}")
+            st.warning(f"Impressions is 0 or not present. Cannot calculate engagement rate.")
             return None
     except Exception as e:
-        logger.error(f"Error calculating engagement rate: {e}", exc_info=True)
+        st.error(f"Error calculating engagement rate: {e}")
         return None
+
+def main():
+    st.title("CSV Data Plotter")
+    logger.info("Starting CSV Data Plotter application")
+
+    csv_dir = 'csv_files'
+    newest_csv = get_newest_csv(csv_dir)
+
+    if newest_csv:
+        try:
+            df = import_csv(newest_csv)
+            if df is not None:
+                st.success(f"Successfully imported CSV file: {os.path.basename(newest_csv)}")
+                st.subheader("Imported Data")
+                st.dataframe(df)
+
+                if 'Date' in df.columns:
+                    logger.info("Converting 'Date' column to datetime")
+                    df['Date'] = pd.to_datetime(df['Date'])
+                    logger.debug(f"Date column after conversion:\n{df['Date'].head()}")
+                
+                st.subheader("Calculating Engagement Rate for 3 Rows")
+                for i, row in df.head(3).iterrows():
+                    st.write(f"\nProcessing Row {i + 1}")
+                    engagement_rate = calculate_engagement_rate(row)
+                    if engagement_rate is not None:
+                        st.success(f"Row {i + 1} Engagement Rate: {engagement_rate:.2f}%")
+                    else:
+                        st.error(f"Row {i + 1}: Unable to calculate engagement rate")
+                
+                logger.info("Calculating engagement rate for all rows")
+                df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)
+                log_df_info(df, "DataFrame after calculating engagement rate")
 
 def main():
     st.title("CSV Data Plotter")

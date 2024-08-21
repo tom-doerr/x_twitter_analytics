@@ -47,10 +47,10 @@ def calculate_engagement_rate(row):
             return engagement_rate
         else:
             logger.warning(f"Impressions value is 0, None, or not present. Row data: {row}")
-            return 0
+            return None  # Return None instead of 0
     except Exception as e:
         logger.error(f"Error calculating engagement rate: {e}", exc_info=True)
-        return 0
+        return None  # Return None in case of any error
 
 def main():
     st.title("CSV Data Plotter")
@@ -72,7 +72,12 @@ def main():
             
             logger.info("Calculating engagement rate")
             df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)
+            df['engagement_rate'] = df['engagement_rate'].fillna(0)  # Replace None values with 0
             log_df_info(df, "DataFrame after calculating engagement rate")
+            
+            # Log the number of rows where engagement rate couldn't be calculated
+            null_engagement_count = df['engagement_rate'].isnull().sum()
+            logger.warning(f"Number of rows where engagement rate couldn't be calculated: {null_engagement_count}")
             
             # Plot engagement rate over time if 'Date' column exists
             if 'Date' in df.columns:

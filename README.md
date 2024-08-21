@@ -1,5 +1,7 @@
 # Twitter Analytics Visualizer
 
+![Average Engagement Rate](screenshot.png)
+
 ## Overview
 This project is a Streamlit application that visualizes Twitter analytics data. It processes CSV files exported from the Twitter Analytics Account Overview page and provides interactive plots to analyze engagement rates and other metrics.
 

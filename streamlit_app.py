@@ -67,8 +67,8 @@ def calculate_engagement_rate(row):
             st.write(f"Calculated engagement rate: {engagement_rate:.2f}%")
             return engagement_rate
         else:
-            st.warning(f"Impressions is 0 or not present. Cannot calculate engagement rate.")
-            return None
+            st.warning(f"Impressions is 0 or not present. Engagement rate is 0.")
+            return 0
     except Exception as e:
         st.error(f"Error calculating engagement rate: {e}")
         return None
@@ -97,8 +97,10 @@ def main():
                 for i, row in df.head(3).iterrows():
                     st.write(f"\nProcessing Row {i + 1}")
                     engagement_rate = calculate_engagement_rate(row)
-                    if engagement_rate is not None:
+                    if engagement_rate > 0:
                         st.success(f"Row {i + 1} Engagement Rate: {engagement_rate:.2f}%")
+                    elif engagement_rate == 0:
+                        st.warning(f"Row {i + 1}: Engagement rate is 0 (Impressions were 0 or not present)")
                     else:
                         st.error(f"Row {i + 1}: Unable to calculate engagement rate")
                 

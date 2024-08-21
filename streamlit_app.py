@@ -40,10 +40,11 @@ def calculate_engagement_rate(row):
         logger.debug(f"Calculating engagement rate for row: {row}")
         total_interactions = sum(row.get(col, 0) for col in ['likes', 'comments', 'shares'])
         logger.debug(f"Total interactions: {total_interactions}")
+        engagements = row.get('engagements', 0)
         impressions = row.get('impressions', 0)
-        logger.debug(f"Impressions: {impressions}")
+        logger.debug(f"Engagements: {engagements}, Impressions: {impressions}")
         if impressions and impressions > 0:
-            engagement_rate = (total_interactions / impressions) * 100
+            engagement_rate = (engagements / impressions) * 100
             logger.debug(f"Calculated engagement rate: {engagement_rate}")
             return engagement_rate
         else:
@@ -95,25 +96,29 @@ def main():
 
             # Create a table with engagements, impressions, and engagement rate for each day
             logger.info("Creating daily engagement table")
-            daily_data = df.groupby('Date').agg({
-                'engagements': 'sum',
-                'impressions': 'sum',
-                'engagement_rate': 'mean'
-            }).reset_index()
+            if 'engagements' in df.columns and 'impressions' in df.columns:
+                daily_data = df.groupby('Date').agg({
+                    'engagements': 'sum',
+                    'impressions': 'sum',
+                    'engagement_rate': 'mean'
+                }).reset_index()
 
-            # Filter out entries with 0 values
-            daily_data_filtered = daily_data[(daily_data['engagements'] != 0) & (daily_data['impressions'] != 0)]
+                # Filter out entries with 0 values
+                daily_data_filtered = daily_data[(daily_data['engagements'] != 0) & (daily_data['impressions'] != 0)]
 
-            # Display the table
-            st.subheader("Daily Engagement Data")
-            st.dataframe(daily_data_filtered)
+                # Display the table
+                st.subheader("Daily Engagement Data")
+                st.dataframe(daily_data_filtered)
 
-            # Plot the data using Plotly
-            st.subheader("Daily Engagement Metrics")
-            fig = px.line(daily_data_filtered, x='Date', y=['engagements', 'impressions', 'engagement_rate'],
-                          labels={'value': 'Value', 'variable': 'Metric'},
-                          title='Daily Engagement Metrics Over Time')
-            st.plotly_chart(fig)
+                # Plot the data using Plotly
+                st.subheader("Daily Engagement Metrics")
+                fig = px.line(daily_data_filtered, x='Date', y=['engagements', 'impressions', 'engagement_rate'],
+                              labels={'value': 'Value', 'variable': 'Metric'},
+                              title='Daily Engagement Metrics Over Time')
+                st.plotly_chart(fig)
+            else:
+                logger.warning("'engagements' or 'impressions' columns not found in the DataFrame")
+                st.warning("Unable to create daily engagement table and plot. Required columns are missing.")
 
             # Display summary statistics
             logger.info("Displaying summary statistics")

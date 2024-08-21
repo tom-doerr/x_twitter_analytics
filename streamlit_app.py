@@ -48,15 +48,25 @@ def import_csv(file_path):
 def calculate_engagement_rate(row):
     try:
         logger.debug(f"Calculating engagement rate for row: {row}")
+        
+        # Step 1: Get engagements and impressions
         engagements = row.get('engagements', 0)
         impressions = row.get('impressions', 0)
-        logger.debug(f"Engagements: {engagements}, Impressions: {impressions}")
-        if pd.notnull(impressions) and impressions > 0 and pd.notnull(engagements) and engagements >= 0:
+        logger.debug(f"Raw values - Engagements: {engagements}, Impressions: {impressions}")
+        
+        # Step 2: Convert to float and handle NaN
+        engagements = float(engagements) if pd.notnull(engagements) else 0
+        impressions = float(impressions) if pd.notnull(impressions) else 0
+        logger.debug(f"Converted values - Engagements: {engagements}, Impressions: {impressions}")
+        
+        # Step 3: Check if impressions is greater than 0
+        if impressions > 0:
+            # Step 4: Calculate engagement rate
             engagement_rate = (engagements / impressions) * 100
             logger.debug(f"Calculated engagement rate: {engagement_rate}")
             return engagement_rate
         else:
-            logger.warning(f"Invalid data for engagement rate calculation. Row data: {row}")
+            logger.warning(f"Impressions is 0 or not present. Cannot calculate engagement rate. Row data: {row}")
             return None
     except Exception as e:
         logger.error(f"Error calculating engagement rate: {e}", exc_info=True)
@@ -94,6 +104,13 @@ def main():
                 df = df.dropna(subset=['engagement_rate'])
                 logger.info(f"Removed {null_engagement_count} rows with null engagement rate")
                 log_df_info(df, "DataFrame after removing null engagement rates")
+
+                # Display information about rows where engagement rate couldn't be calculated
+                if null_engagement_count > 0:
+                    st.warning(f"Engagement rate couldn't be calculated for {null_engagement_count} rows. These rows have been removed from the analysis.")
+                    problematic_rows = df[df['engagement_rate'].isnull()]
+                    st.subheader("Rows with issues:")
+                    st.dataframe(problematic_rows)
                 
                 # Plot engagement rate over time if 'Date' column exists
                 if 'Date' in df.columns:

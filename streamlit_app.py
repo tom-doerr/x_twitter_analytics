@@ -50,7 +50,8 @@ def calculate_engagement_rate(row):
         likes = row.get('Likes', 0)
         comments = row.get('Replies', 0)
         shares = row.get('Reposts', 0)
-        total_interactions = likes + comments + shares
+        bookmarks = row.get('Bookmarks', 0)  # Added bookmarks
+        total_interactions = likes + comments + shares + bookmarks
         impressions = row.get('Impressions', 0)
         
         total_interactions = float(total_interactions) if pd.notnull(total_interactions) else 0
@@ -91,6 +92,9 @@ def main():
                     engagement_rate = calculate_engagement_rate(row)
                     if engagement_rate > 0:
                         st.success(f"Row {i + 1} Engagement Rate: {engagement_rate:.2f}%")
+                        st.write(f"Likes: {row.get('Likes', 0)}, Comments: {row.get('Replies', 0)}, "
+                                 f"Shares: {row.get('Reposts', 0)}, Bookmarks: {row.get('Bookmarks', 0)}, "
+                                 f"Impressions: {row.get('Impressions', 0)}")
                     elif engagement_rate == 0:
                         st.warning(f"Row {i + 1}: Engagement rate is 0 (Impressions were 0 or not present)")
                     else:

@@ -11,7 +11,6 @@ This tool offers several advantages over the built-in Twitter Analytics plots:
 - **Flexible Data Exploration**: Users can select any feature for both X and Y axes, allowing for custom comparisons not available in Twitter Analytics.
 - **Engagement Rate Calculation**: Automatically calculates engagement rates, a metric not directly plotted in Twitter Analytics.
 - **Interactive Plotting**: Utilizes Plotly for interactive, zoomable, and exportable plots.
-- **Historical Data Analysis**: Easily compare metrics across different time periods by selecting the date for the X-axis.
 - **Custom Metric Combinations**: Explore relationships between any two metrics of your choice.
 - **Data Table View**: Displays all imported data in a table format for easy reference.
 

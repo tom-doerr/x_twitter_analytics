@@ -41,7 +41,7 @@ def calculate_engagement_rate(row):
         engagements = row.get('engagements', 0)
         impressions = row.get('impressions', 0)
         logger.debug(f"Engagements: {engagements}, Impressions: {impressions}")
-        if impressions and impressions > 0 and engagements is not None:
+        if pd.notnull(impressions) and impressions > 0 and pd.notnull(engagements) and engagements >= 0:
             engagement_rate = (engagements / impressions) * 100
             logger.debug(f"Calculated engagement rate: {engagement_rate}")
             return engagement_rate
@@ -72,12 +72,16 @@ def main():
             
             logger.info("Calculating engagement rate")
             df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)
-            df['engagement_rate'] = df['engagement_rate'].fillna(0)  # Replace None values with 0
             log_df_info(df, "DataFrame after calculating engagement rate")
             
             # Log the number of rows where engagement rate couldn't be calculated
             null_engagement_count = df['engagement_rate'].isnull().sum()
             logger.warning(f"Number of rows where engagement rate couldn't be calculated: {null_engagement_count}")
+
+            # Remove rows with null engagement rate
+            df = df.dropna(subset=['engagement_rate'])
+            logger.info(f"Removed {null_engagement_count} rows with null engagement rate")
+            log_df_info(df, "DataFrame after removing null engagement rates")
             
             # Plot engagement rate over time if 'Date' column exists
             if 'Date' in df.columns:

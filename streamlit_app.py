@@ -89,21 +89,16 @@ def main():
                 df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)
                 log_df_info(df, "DataFrame after calculating engagement rate")
 
-                # Plot engagement rates
-                st.subheader("Engagement Rates Over Time")
-                fig = px.line(df, x='Date', y='engagement_rate', title='Engagement Rate Over Time')
-                st.plotly_chart(fig)
-
                 # Display average engagement rate
                 avg_engagement_rate = df['engagement_rate'].mean()
                 st.metric("Average Engagement Rate", f"{avg_engagement_rate:.2f}%")
 
                 # Interactive plot with selectable X and Y axes
                 st.subheader("Interactive Plot")
-                x_axis = st.selectbox("Select X-axis", options=df.columns)
-                y_axis = st.selectbox("Select Y-axis", options=df.columns)
+                x_axis = st.selectbox("Select X-axis", options=df.columns, index=df.columns.get_loc('Date'))
+                y_axis = st.selectbox("Select Y-axis", options=df.columns, index=df.columns.get_loc('engagement_rate'))
                 
-                fig = px.scatter(df, x=x_axis, y=y_axis, title=f'{y_axis} vs {x_axis}')
+                fig = px.line(df, x=x_axis, y=y_axis, title=f'{y_axis} vs {x_axis}')
                 st.plotly_chart(fig)
 
         except Exception as e:

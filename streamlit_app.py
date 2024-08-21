@@ -77,9 +77,6 @@ def main():
         try:
             df = import_csv(newest_csv)
             if df is not None:
-                st.subheader("Imported Data")
-                st.dataframe(df)
-
                 if 'Date' in df.columns:
                     logger.info("Converting 'Date' column to datetime")
                     df['Date'] = pd.to_datetime(df['Date'])
@@ -89,10 +86,6 @@ def main():
                 df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)
                 log_df_info(df, "DataFrame after calculating engagement rate")
 
-                # Display average engagement rate
-                avg_engagement_rate = df['engagement_rate'].mean()
-                st.metric("Average Engagement Rate", f"{avg_engagement_rate:.2f}%")
-
                 # Interactive plot with selectable X and Y axes
                 st.subheader("Interactive Plot")
                 x_axis = st.selectbox("Select X-axis", options=df.columns, index=df.columns.get_loc('Date'))
@@ -100,6 +93,10 @@ def main():
                 
                 fig = px.line(df, x=x_axis, y=y_axis, title=f'{y_axis} vs {x_axis}')
                 st.plotly_chart(fig)
+
+                # Display imported data at the bottom
+                st.subheader("Imported Data")
+                st.dataframe(df)
 
         except Exception as e:
             st.error(f"An error occurred while processing the CSV file: {e}")

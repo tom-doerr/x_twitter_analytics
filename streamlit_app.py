@@ -77,7 +77,6 @@ def main():
         try:
             df = import_csv(newest_csv)
             if df is not None:
-                st.success(f"Successfully imported CSV file: {os.path.basename(newest_csv)}")
                 st.subheader("Imported Data")
                 st.dataframe(df)
 
@@ -85,20 +84,6 @@ def main():
                     logger.info("Converting 'Date' column to datetime")
                     df['Date'] = pd.to_datetime(df['Date'])
                     logger.debug(f"Date column after conversion:\n{df['Date'].head()}")
-                
-                st.subheader("Calculating Engagement Rate for 3 Rows")
-                for i, row in df.head(3).iterrows():
-                    st.write(f"\nProcessing Row {i + 1}")
-                    engagement_rate = calculate_engagement_rate(row)
-                    if engagement_rate > 0:
-                        st.success(f"Row {i + 1} Engagement Rate: {engagement_rate:.2f}%")
-                        st.write(f"Likes: {row.get('Likes', 0)}, Comments: {row.get('Replies', 0)}, "
-                                 f"Shares: {row.get('Reposts', 0)}, Bookmarks: {row.get('Bookmarks', 0)}, "
-                                 f"Impressions: {row.get('Impressions', 0)}")
-                    elif engagement_rate == 0:
-                        st.warning(f"Row {i + 1}: Engagement rate is 0 (Impressions were 0 or not present)")
-                    else:
-                        st.error(f"Row {i + 1}: Unable to calculate engagement rate")
                 
                 logger.info("Calculating engagement rate for all rows")
                 df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)

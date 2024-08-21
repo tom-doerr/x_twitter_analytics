@@ -38,21 +38,19 @@ def get_newest_csv(directory):
 def calculate_engagement_rate(row):
     try:
         logger.debug(f"Calculating engagement rate for row: {row}")
-        total_interactions = sum(row.get(col, 0) for col in ['likes', 'comments', 'shares'])
-        logger.debug(f"Total interactions: {total_interactions}")
         engagements = row.get('engagements', 0)
         impressions = row.get('impressions', 0)
         logger.debug(f"Engagements: {engagements}, Impressions: {impressions}")
-        if impressions and impressions > 0:
+        if impressions and impressions > 0 and engagements is not None:
             engagement_rate = (engagements / impressions) * 100
             logger.debug(f"Calculated engagement rate: {engagement_rate}")
             return engagement_rate
         else:
-            logger.warning(f"Impressions value is 0, None, or not present. Row data: {row}")
-            return None  # Return None instead of 0
+            logger.warning(f"Invalid data for engagement rate calculation. Row data: {row}")
+            return None
     except Exception as e:
         logger.error(f"Error calculating engagement rate: {e}", exc_info=True)
-        return None  # Return None in case of any error
+        return None
 
 def main():
     st.title("CSV Data Plotter")
@@ -96,29 +94,39 @@ def main():
 
             # Create a table with engagements, impressions, and engagement rate for each day
             logger.info("Creating daily engagement table")
-            if 'engagements' in df.columns and 'impressions' in df.columns:
+            required_columns = ['Date', 'engagements', 'impressions', 'engagement_rate']
+            if all(col in df.columns for col in required_columns):
                 daily_data = df.groupby('Date').agg({
                     'engagements': 'sum',
                     'impressions': 'sum',
                     'engagement_rate': 'mean'
                 }).reset_index()
 
-                # Filter out entries with 0 values
-                daily_data_filtered = daily_data[(daily_data['engagements'] != 0) & (daily_data['impressions'] != 0)]
+                # Filter out entries with 0 or null values
+                daily_data_filtered = daily_data[
+                    (daily_data['engagements'] > 0) & 
+                    (daily_data['impressions'] > 0) & 
+                    (daily_data['engagement_rate'].notnull())
+                ]
 
-                # Display the table
-                st.subheader("Daily Engagement Data")
-                st.dataframe(daily_data_filtered)
+                if not daily_data_filtered.empty:
+                    # Display the table
+                    st.subheader("Daily Engagement Data")
+                    st.dataframe(daily_data_filtered)
 
-                # Plot the data using Plotly
-                st.subheader("Daily Engagement Metrics")
-                fig = px.line(daily_data_filtered, x='Date', y=['engagements', 'impressions', 'engagement_rate'],
-                              labels={'value': 'Value', 'variable': 'Metric'},
-                              title='Daily Engagement Metrics Over Time')
-                st.plotly_chart(fig)
+                    # Plot the data using Plotly
+                    st.subheader("Daily Engagement Metrics")
+                    fig = px.line(daily_data_filtered, x='Date', y=['engagements', 'impressions', 'engagement_rate'],
+                                  labels={'value': 'Value', 'variable': 'Metric'},
+                                  title='Daily Engagement Metrics Over Time')
+                    st.plotly_chart(fig)
+                else:
+                    logger.warning("No valid data for daily engagement table and plot after filtering")
+                    st.warning("No valid data available for daily engagement table and plot after filtering out zero and null values.")
             else:
-                logger.warning("'engagements' or 'impressions' columns not found in the DataFrame")
-                st.warning("Unable to create daily engagement table and plot. Required columns are missing.")
+                missing_columns = [col for col in required_columns if col not in df.columns]
+                logger.warning(f"Missing columns: {missing_columns}")
+                st.warning(f"Unable to create daily engagement table and plot. Missing columns: {', '.join(missing_columns)}")
 
             # Display summary statistics
             logger.info("Displaying summary statistics")

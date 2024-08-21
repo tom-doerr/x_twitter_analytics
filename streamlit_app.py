@@ -51,11 +51,11 @@ def calculate_engagement_rate(row):
     
     try:
         # Step 1: Get engagements and impressions
-        likes = row.get('likes', 0)
-        comments = row.get('comments', 0)
-        shares = row.get('shares', 0)
+        likes = row.get('Likes', 0)
+        comments = row.get('Replies', 0)  # Assuming 'Replies' corresponds to comments
+        shares = row.get('Reposts', 0)  # Assuming 'Reposts' corresponds to shares
         total_interactions = likes + comments + shares
-        impressions = row.get('impressions', 0)
+        impressions = row.get('Impressions', 0)
         st.write(f"Raw values - Likes: {likes}, Comments: {comments}, Shares: {shares}, Total Interactions: {total_interactions}, Impressions: {impressions}")
         
         # Step 2: Convert to float and handle NaN

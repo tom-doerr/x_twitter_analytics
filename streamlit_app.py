@@ -56,7 +56,16 @@ def main():
 
             # Display summary statistics
             st.subheader("Summary Statistics")
-            st.write(df.describe())
+            st.dataframe(df.describe())
+
+            # Display key metrics
+            st.subheader("Key Metrics")
+            col1, col2, col3, col4, col5 = st.columns(5)
+            col1.metric("Impressions", f"{df['impressions'].mean():.0f}")
+            col2.metric("Likes", f"{df['likes'].mean():.0f}")
+            col3.metric("Engagements", f"{df['engagements'].mean():.0f}")
+            col4.metric("Bookmarks", f"{df['bookmarks'].mean():.0f}")
+            col5.metric("Share", f"{df['share'].mean():.0f}")
 
             # Select columns for plotting
             st.subheader("Select columns for custom plotting")
@@ -84,7 +93,7 @@ def main():
             # Display the dataframe
             st.subheader("Raw Data")
             st.write(f"Data from the newest CSV file: {os.path.basename(newest_csv)}")
-            st.write(df)
+            st.dataframe(df)
 
         except Exception as e:
             st.error(f"An error occurred while processing the CSV file: {e}")

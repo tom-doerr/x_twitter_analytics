@@ -5,50 +5,78 @@ import seaborn as sns
 import os
 from glob import glob
 import logging
+import sys
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Add a stream handler to output logs to Streamlit
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+stream_handler.setFormatter(formatter)
+logger.addHandler(stream_handler)
+
+def log_df_info(df, message):
+    logger.debug(f"{message}\nShape: {df.shape}\nColumns: {df.columns.tolist()}\nData types:\n{df.dtypes}")
+    logger.debug(f"First few rows:\n{df.head().to_string()}")
+    logger.debug(f"Summary statistics:\n{df.describe().to_string()}")
+
 def get_newest_csv(directory):
+    logger.debug(f"Searching for CSV files in directory: {directory}")
     csv_files = glob(os.path.join(directory, '*.csv'))
+    logger.debug(f"Found CSV files: {csv_files}")
     if not csv_files:
+        logger.warning("No CSV files found in the directory.")
         return None
-    return max(csv_files, key=os.path.getmtime)
+    newest_file = max(csv_files, key=os.path.getmtime)
+    logger.info(f"Newest CSV file: {newest_file}")
+    return newest_file
 
 def calculate_engagement_rate(row):
     try:
+        logger.debug(f"Calculating engagement rate for row: {row}")
         total_interactions = sum(row.get(col, 0) for col in ['likes', 'comments', 'shares'])
+        logger.debug(f"Total interactions: {total_interactions}")
         impressions = row.get('impressions', 0)
+        logger.debug(f"Impressions: {impressions}")
         if impressions and impressions > 0:
-            return (total_interactions / impressions) * 100
+            engagement_rate = (total_interactions / impressions) * 100
+            logger.debug(f"Calculated engagement rate: {engagement_rate}")
+            return engagement_rate
         else:
-            logger.warning("Impressions value is 0, None, or not present. Returning 0 for engagement rate.")
+            logger.warning(f"Impressions value is 0, None, or not present. Row data: {row}")
             return 0
     except Exception as e:
-        logger.error(f"Error calculating engagement rate: {e}")
+        logger.error(f"Error calculating engagement rate: {e}", exc_info=True)
         return 0
 
 def main():
     st.title("CSV Data Plotter")
+    logger.info("Starting CSV Data Plotter application")
 
     csv_dir = 'csv_files'
     newest_csv = get_newest_csv(csv_dir)
 
     if newest_csv:
         try:
-            # Read the CSV file
+            logger.info(f"Reading CSV file: {newest_csv}")
             df = pd.read_csv(newest_csv)
+            log_df_info(df, "Initial DataFrame")
             
-            # Convert 'Date' column to datetime if it exists
             if 'Date' in df.columns:
+                logger.info("Converting 'Date' column to datetime")
                 df['Date'] = pd.to_datetime(df['Date'])
+                logger.debug(f"Date column after conversion:\n{df['Date'].head()}")
             
-            # Calculate engagement rate
+            logger.info("Calculating engagement rate")
             df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)
+            log_df_info(df, "DataFrame after calculating engagement rate")
             
             # Plot engagement rate over time if 'Date' column exists
             if 'Date' in df.columns:
+                logger.info("Plotting engagement rate over time")
                 st.subheader("Engagement Rate Over Time")
                 fig_engagement, ax_engagement = plt.subplots(figsize=(10, 6))
                 sns.lineplot(data=df, x='Date', y='engagement_rate', ax=ax_engagement)
@@ -57,23 +85,35 @@ def main():
                 ax_engagement.set_ylabel('Engagement Rate (%)')
                 ax_engagement.set_title('Engagement Rate Over Time')
                 st.pyplot(fig_engagement)
+                logger.debug("Engagement rate plot created")
 
             # Display summary statistics
+            logger.info("Displaying summary statistics")
             st.subheader("Summary Statistics")
-            st.dataframe(df.describe())
+            summary_stats = df.describe()
+            st.dataframe(summary_stats)
+            logger.debug(f"Summary statistics:\n{summary_stats.to_string()}")
 
             # Display key metrics
+            logger.info("Displaying key metrics")
             st.subheader("Key Metrics")
             col1, col2, col3, col4, col5 = st.columns(5)
             
             def safe_mean(column):
-                return f"{df[column].mean():.0f}" if column in df.columns and not df[column].isnull().all() else "N/A"
+                if column in df.columns and not df[column].isnull().all():
+                    mean_value = df[column].mean()
+                    logger.debug(f"Mean value for {column}: {mean_value}")
+                    return f"{mean_value:.0f}"
+                else:
+                    logger.warning(f"Column {column} not found or all values are null")
+                    return "N/A"
             
             col1.metric("Impressions", safe_mean('impressions'))
             col2.metric("Likes", safe_mean('likes'))
             col3.metric("Engagements", safe_mean('engagements'))
             col4.metric("Bookmarks", safe_mean('bookmarks'))
             col5.metric("Share", safe_mean('share'))
+            logger.debug("Key metrics displayed")
 
             # Select columns for plotting
             st.subheader("Select columns for custom plotting")

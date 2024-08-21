@@ -98,10 +98,6 @@ def main():
                 avg_engagement_rate = df['engagement_rate'].mean()
                 st.metric("Average Engagement Rate", f"{avg_engagement_rate:.2f}%")
 
-                # Display top 5 posts by engagement rate
-                st.subheader("Top 5 Posts by Engagement Rate")
-                top_posts = df.nlargest(5, 'engagement_rate')[['Date', 'engagement_rate', 'Post']]
-                st.dataframe(top_posts)
 
         except Exception as e:
             st.error(f"An error occurred while processing the CSV file: {e}")

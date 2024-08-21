@@ -20,7 +20,11 @@ def calculate_engagement_rate(row):
     try:
         total_interactions = sum(row.get(col, 0) for col in ['likes', 'comments', 'shares'])
         impressions = row.get('impressions', 0)
-        return (total_interactions / impressions) * 100 if impressions > 0 else 0
+        if impressions > 0:
+            return (total_interactions / impressions) * 100
+        else:
+            logger.warning("Impressions value is 0 or not present. Returning 0 for engagement rate.")
+            return 0
     except Exception as e:
         logger.error(f"Error calculating engagement rate: {e}")
         return 0
@@ -61,11 +65,11 @@ def main():
             # Display key metrics
             st.subheader("Key Metrics")
             col1, col2, col3, col4, col5 = st.columns(5)
-            col1.metric("Impressions", f"{df['impressions'].mean():.0f}")
-            col2.metric("Likes", f"{df['likes'].mean():.0f}")
-            col3.metric("Engagements", f"{df['engagements'].mean():.0f}")
-            col4.metric("Bookmarks", f"{df['bookmarks'].mean():.0f}")
-            col5.metric("Share", f"{df['share'].mean():.0f}")
+            col1.metric("Impressions", f"{df['impressions'].mean():.0f}" if 'impressions' in df.columns else "N/A")
+            col2.metric("Likes", f"{df['likes'].mean():.0f}" if 'likes' in df.columns else "N/A")
+            col3.metric("Engagements", f"{df['engagements'].mean():.0f}" if 'engagements' in df.columns else "N/A")
+            col4.metric("Bookmarks", f"{df['bookmarks'].mean():.0f}" if 'bookmarks' in df.columns else "N/A")
+            col5.metric("Share", f"{df['share'].mean():.0f}" if 'share' in df.columns else "N/A")
 
             # Select columns for plotting
             st.subheader("Select columns for custom plotting")

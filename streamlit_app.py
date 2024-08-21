@@ -51,9 +51,12 @@ def calculate_engagement_rate(row):
     
     try:
         # Step 1: Get engagements and impressions
-        total_interactions = sum(row.get(col, 0) for col in ['likes', 'comments', 'shares'])
+        likes = row.get('likes', 0)
+        comments = row.get('comments', 0)
+        shares = row.get('shares', 0)
+        total_interactions = likes + comments + shares
         impressions = row.get('impressions', 0)
-        st.write(f"Raw values - Total Interactions: {total_interactions}, Impressions: {impressions}")
+        st.write(f"Raw values - Likes: {likes}, Comments: {comments}, Shares: {shares}, Total Interactions: {total_interactions}, Impressions: {impressions}")
         
         # Step 2: Convert to float and handle NaN
         total_interactions = float(total_interactions) if pd.notnull(total_interactions) else 0
@@ -68,9 +71,13 @@ def calculate_engagement_rate(row):
             return engagement_rate
         else:
             st.warning(f"Impressions is 0 or not present. Engagement rate is 0.")
+            st.write(f"Detailed breakdown - Likes: {likes}, Comments: {comments}, Shares: {shares}, Total Interactions: {total_interactions}, Impressions: {impressions}")
             return 0
     except Exception as e:
         st.error(f"Error calculating engagement rate: {e}")
+        st.write(f"Error details - Row data: {row}")
+        st.write(f"Error type: {type(e).__name__}")
+        st.write(f"Error message: {str(e)}")
         return None
 
 def main():

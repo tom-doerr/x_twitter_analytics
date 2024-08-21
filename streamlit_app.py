@@ -93,6 +93,28 @@ def main():
                 st.pyplot(fig_engagement)
                 logger.debug("Engagement rate plot created")
 
+            # Create a table with engagements, impressions, and engagement rate for each day
+            logger.info("Creating daily engagement table")
+            daily_data = df.groupby('Date').agg({
+                'engagements': 'sum',
+                'impressions': 'sum',
+                'engagement_rate': 'mean'
+            }).reset_index()
+
+            # Filter out entries with 0 values
+            daily_data_filtered = daily_data[(daily_data['engagements'] != 0) & (daily_data['impressions'] != 0)]
+
+            # Display the table
+            st.subheader("Daily Engagement Data")
+            st.dataframe(daily_data_filtered)
+
+            # Plot the data using Plotly
+            st.subheader("Daily Engagement Metrics")
+            fig = px.line(daily_data_filtered, x='Date', y=['engagements', 'impressions', 'engagement_rate'],
+                          labels={'value': 'Value', 'variable': 'Metric'},
+                          title='Daily Engagement Metrics Over Time')
+            st.plotly_chart(fig)
+
             # Display summary statistics
             logger.info("Displaying summary statistics")
             st.subheader("Summary Statistics")
@@ -120,29 +142,6 @@ def main():
             col4.metric("Bookmarks", safe_mean('bookmarks'))
             col5.metric("Share", safe_mean('share'))
             logger.debug("Key metrics displayed")
-
-            # Select columns for plotting
-            st.subheader("Select columns for custom plotting")
-            numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
-            date_columns = df.select_dtypes(include=['datetime64']).columns
-            x_column = st.selectbox("Select the X-axis column", list(date_columns) + list(numeric_columns))
-            y_column = st.selectbox("Select the Y-axis column", numeric_columns)
-
-            # Create the custom plot
-            fig_custom, ax_custom = plt.subplots(figsize=(10, 6))
-            
-            if x_column in date_columns:
-                sns.lineplot(data=df, x=x_column, y=y_column, ax=ax_custom)
-                plt.xticks(rotation=45)
-            else:
-                sns.scatterplot(data=df, x=x_column, y=y_column, ax=ax_custom)
-            
-            ax_custom.set_xlabel(x_column)
-            ax_custom.set_ylabel(y_column)
-            ax_custom.set_title(f"{y_column} vs {x_column}")
-
-            # Display the custom plot
-            st.pyplot(fig_custom)
 
             # Display the dataframe
             st.subheader("Raw Data")

@@ -6,6 +6,7 @@ import os
 from glob import glob
 import logging
 import sys
+import plotly.express as px
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

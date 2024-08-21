@@ -35,6 +35,16 @@ def get_newest_csv(directory):
     logger.info(f"Newest CSV file: {newest_file}")
     return newest_file
 
+def import_csv(file_path):
+    try:
+        df = pd.read_csv(file_path)
+        logger.info(f"Successfully imported CSV file: {file_path}")
+        log_df_info(df, "Imported DataFrame")
+        return df
+    except Exception as e:
+        logger.error(f"Error importing CSV file: {e}")
+        return None
+
 def calculate_engagement_rate(row):
     try:
         logger.debug(f"Calculating engagement rate for row: {row}")
@@ -60,11 +70,12 @@ def main():
     newest_csv = get_newest_csv(csv_dir)
 
     if newest_csv:
-        try:
-            logger.info(f"Reading CSV file: {newest_csv}")
-            df = pd.read_csv(newest_csv)
-            log_df_info(df, "Initial DataFrame")
-            
+        df = import_csv(newest_csv)
+        if df is not None:
+            st.success(f"Successfully imported CSV file: {os.path.basename(newest_csv)}")
+            st.subheader("Imported Data")
+            st.dataframe(df)
+
             if 'Date' in df.columns:
                 logger.info("Converting 'Date' column to datetime")
                 df['Date'] = pd.to_datetime(df['Date'])

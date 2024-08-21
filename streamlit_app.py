@@ -54,6 +54,10 @@ def main():
                 ax_engagement.set_title('Engagement Rate Over Time')
                 st.pyplot(fig_engagement)
 
+            # Display summary statistics
+            st.subheader("Summary Statistics")
+            st.write(df.describe())
+
             # Select columns for plotting
             st.subheader("Select columns for custom plotting")
             numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
@@ -81,10 +85,6 @@ def main():
             st.subheader("Raw Data")
             st.write(f"Data from the newest CSV file: {os.path.basename(newest_csv)}")
             st.write(df)
-
-            # Display summary statistics
-            st.subheader("Summary Statistics")
-            st.write(df.describe())
 
         except Exception as e:
             st.error(f"An error occurred while processing the CSV file: {e}")

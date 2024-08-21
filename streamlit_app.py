@@ -46,38 +46,23 @@ def import_csv(file_path):
         return None
 
 def calculate_engagement_rate(row):
-    st.write("--- Calculating Engagement Rate ---")
-    st.write(f"Processing row: {row}")
-    
     try:
-        # Step 1: Get engagements and impressions
         likes = row.get('Likes', 0)
-        comments = row.get('Replies', 0)  # Assuming 'Replies' corresponds to comments
-        shares = row.get('Reposts', 0)  # Assuming 'Reposts' corresponds to shares
+        comments = row.get('Replies', 0)
+        shares = row.get('Reposts', 0)
         total_interactions = likes + comments + shares
         impressions = row.get('Impressions', 0)
-        st.write(f"Raw values - Likes: {likes}, Comments: {comments}, Shares: {shares}, Total Interactions: {total_interactions}, Impressions: {impressions}")
         
-        # Step 2: Convert to float and handle NaN
         total_interactions = float(total_interactions) if pd.notnull(total_interactions) else 0
         impressions = float(impressions) if pd.notnull(impressions) else 0
-        st.write(f"Converted values - Total Interactions: {total_interactions}, Impressions: {impressions}")
         
-        # Step 3: Check if impressions is greater than 0
         if impressions > 0:
-            # Step 4: Calculate engagement rate
             engagement_rate = (total_interactions / impressions) * 100
-            st.write(f"Calculated engagement rate: {engagement_rate:.2f}%")
             return engagement_rate
         else:
-            st.warning(f"Impressions is 0 or not present. Engagement rate is 0.")
-            st.write(f"Detailed breakdown - Likes: {likes}, Comments: {comments}, Shares: {shares}, Total Interactions: {total_interactions}, Impressions: {impressions}")
             return 0
     except Exception as e:
-        st.error(f"Error calculating engagement rate: {e}")
-        st.write(f"Error details - Row data: {row}")
-        st.write(f"Error type: {type(e).__name__}")
-        st.write(f"Error message: {str(e)}")
+        logger.error(f"Error calculating engagement rate: {e}")
         return None
 
 def main():
@@ -115,7 +100,19 @@ def main():
                 df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)
                 log_df_info(df, "DataFrame after calculating engagement rate")
 
-                # Add more processing and visualization code here
+                # Plot engagement rates
+                st.subheader("Engagement Rates Over Time")
+                fig = px.line(df, x='Date', y='engagement_rate', title='Engagement Rate Over Time')
+                st.plotly_chart(fig)
+
+                # Display average engagement rate
+                avg_engagement_rate = df['engagement_rate'].mean()
+                st.metric("Average Engagement Rate", f"{avg_engagement_rate:.2f}%")
+
+                # Display top 5 posts by engagement rate
+                st.subheader("Top 5 Posts by Engagement Rate")
+                top_posts = df.nlargest(5, 'engagement_rate')[['Date', 'engagement_rate', 'Post']]
+                st.dataframe(top_posts)
 
         except Exception as e:
             st.error(f"An error occurred while processing the CSV file: {e}")

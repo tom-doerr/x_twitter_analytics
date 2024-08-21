@@ -9,13 +9,6 @@ This project is a Streamlit application that visualizes Twitter analytics data. 
 - Provides an interactive plot where users can select X and Y axes for data exploration
 - Displays the imported data in a table format
 
-## Installation
-1. Clone this repository
-2. Install the required packages:
-   ```
-   pip install -r requirements.txt
-   ```
-
 ## Usage
 1. Place your Twitter Analytics CSV file(s) in the `csv_files` directory
 2. Run the Streamlit app:

@@ -33,4 +33,4 @@ Additional columns may be present and can be used in the interactive plot.
 Contributions to improve the application are welcome. Please feel free to submit a Pull Request.
 
 ## License
-[Insert your chosen license here]
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

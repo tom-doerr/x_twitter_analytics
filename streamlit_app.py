@@ -106,9 +106,16 @@ def main():
                 df['engagement_rate'] = df.apply(calculate_engagement_rate, axis=1)
                 log_df_info(df, "DataFrame after calculating engagement rate")
 
-def main():
-    st.title("CSV Data Plotter")
-    logger.info("Starting CSV Data Plotter application")
+                # Add more processing and visualization code here
+
+        except Exception as e:
+            st.error(f"An error occurred while processing the CSV file: {e}")
+            logger.error(f"Error processing CSV file: {e}", exc_info=True)
+    else:
+        st.error("No CSV files found in the 'csv_files' directory.")
+
+if __name__ == "__main__":
+    main()
 
     csv_dir = 'csv_files'
     newest_csv = get_newest_csv(csv_dir)
